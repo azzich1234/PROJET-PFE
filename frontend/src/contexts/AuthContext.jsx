@@ -45,9 +45,17 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // Refresh user data from the API
+  const refreshUser = async () => {
+    try {
+      const res = await getUser();
+      setUser(res.data.user);
+    } catch {}
+  };
+
   // Step 7: Share everything with child components
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

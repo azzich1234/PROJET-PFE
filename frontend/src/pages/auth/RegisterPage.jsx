@@ -35,37 +35,40 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-100">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+      <header className="flex items-center justify-between px-8 py-5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-600/20">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
-          <span className="text-xl font-bold text-gray-800">LinguaPro</span>
+          <span className="text-xl font-bold text-gray-800 tracking-tight">LinguaPro</span>
         </div>
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-gray-500">Need help?</span>
+          <span className="text-gray-400">Need help?</span>
           <a href="#" className="text-blue-600 font-medium hover:underline">Contact Support</a>
         </div>
       </header>
 
       {/* Card */}
       <div className="flex items-center justify-center px-4 mt-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-center text-gray-800">Create your account</h1>
-          <p className="text-center text-sm text-gray-500 mt-1 mb-6">Start learning languages today.</p>
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-8 border border-gray-100">
+          <h1 className="text-2xl font-bold text-center text-gray-800 tracking-tight">Create your account</h1>
+          <p className="text-center text-[13px] text-gray-500 mt-1 mb-6">Start learning languages today.</p>
 
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">{errors.general[0]}</div>
+            <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-[13px] flex items-center gap-2">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+              {errors.general[0]}
+            </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Full name</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -74,14 +77,14 @@ export default function RegisterPage() {
                 </span>
                 <input name="name" type="text" required value={form.name} onChange={handleChange}
                   placeholder=""
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm hover:border-gray-300 transition-all duration-200" />
               </div>
               {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name[0]}</p>}
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Email address</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -90,14 +93,14 @@ export default function RegisterPage() {
                 </span>
                 <input name="email" type="email" required value={form.email} onChange={handleChange}
                   placeholder=""
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm hover:border-gray-300 transition-all duration-200" />
               </div>
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email[0]}</p>}
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Password</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -106,7 +109,7 @@ export default function RegisterPage() {
                 </span>
                 <input name="password" type={showPassword ? 'text' : 'password'} required
                   value={form.password} onChange={handleChange} placeholder=""
-                  className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm hover:border-gray-300 transition-all duration-200" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
                   {showPassword ? (
@@ -126,7 +129,7 @@ export default function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
+              <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Confirm password</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -135,7 +138,7 @@ export default function RegisterPage() {
                 </span>
                 <input name="password_confirmation" type={showConfirm ? 'text' : 'password'} required
                   value={form.password_confirmation} onChange={handleChange} placeholder=""
-                  className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm hover:border-gray-300 transition-all duration-200" />
                 <button type="button" onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
                   {showConfirm ? (
@@ -154,7 +157,7 @@ export default function RegisterPage() {
 
             {/* Register button */}
             <button type="submit" disabled={loading}
-              className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer">
+              className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 transition-all duration-200 cursor-pointer shadow-sm shadow-blue-600/20 hover:shadow-md hover:shadow-blue-600/25 text-[14px]">
               {loading ? 'Creating account...' : 'Sign up'}
             </button>
           </form>
@@ -167,7 +170,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Social buttons */}
-          <button className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+          <button className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 cursor-pointer">
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -178,9 +181,9 @@ export default function RegisterPage() {
           </button>
 
           {/* Sign in link */}
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-[13px] text-gray-500">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
+            <Link to="/login" className="text-blue-600 font-semibold hover:underline">Sign in</Link>
           </p>
         </div>
       </div>
