@@ -1,5 +1,7 @@
 import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getInstructorLanguages, getChapters, getTestQuestions } from '../api/auth';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -13,86 +15,470 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-        {/* Welcome */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{greeting()}, {user?.name?.split(' ')[0]}</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-          </p>
-        </div>
+        {/* Learner gets a fully custom dashboard */}
+        {user?.role === 'learner' && <LearnerDashboard user={user} />}
+
+        {/* Instructor gets a fully custom dashboard */}
+        {user?.role === 'instructor' && <InstructorDashboard user={user} />}
+
+        {user?.role === 'admin' && (
+          <>
+            {/* Welcome */}
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-white">{greeting()}, {user?.name?.split(' ')[0]}</h1>
+              <p className="text-sm mt-1 text-slate-400">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </p>
+            </div>
+          </>
+        )}
 
         {/* Stats Cards */}
         {user?.role === 'learner' && <LearnerStats />}
-        {user?.role === 'instructor' && <InstructorStats />}
         {user?.role === 'admin' && <AdminStats />}
 
         {/* Quick Actions */}
+        {user?.role === 'admin' && (
         <div>
-          <h3 className="text-base font-semibold text-gray-800 mb-4">Quick Actions</h3>
-          {user?.role === 'learner' && <LearnerActions />}
-          {user?.role === 'instructor' && <InstructorActions />}
-          {user?.role === 'admin' && <AdminActions />}
+          <h3 className="text-base font-semibold mb-4 text-white">Quick Actions</h3>
+          <AdminActions />
         </div>
+        )}
 
         {/* Recent Activity */}
+        {user?.role === 'admin' && (
         <div>
-          <h3 className="text-base font-semibold text-gray-800 mb-4">Recent Activity</h3>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <div className="text-center py-6 text-gray-400">
-              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <h3 className="text-base font-semibold mb-4 text-white">Recent Activity</h3>
+          <div className="rounded-2xl border p-8 bg-[#111827] border-white/5">
+            <div className="text-center py-6 text-slate-500">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-white/5">
+                <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="font-semibold text-gray-500 text-sm">No recent activity</p>
-              <p className="text-xs mt-1.5 text-gray-400 max-w-xs mx-auto">Your activity will appear here as you start using the platform.</p>
+              <p className="font-semibold text-sm text-slate-400">No recent activity</p>
+              <p className="text-xs mt-1.5 max-w-xs mx-auto text-slate-500">Your activity will appear here as you start using the platform.</p>
             </div>
           </div>
         </div>
+        )}
     </div>
   );
 }
 
 // ─── Learner Components ────────────────────────────────
 
+function LearnerDashboard({ user }) {
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weekActivity = [45, 30, 60, 20, 50, 0, 0];
+  const maxActivity = Math.max(...weekActivity, 1);
+
+  const greeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Hero Banner — Gradient with decorative shapes */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 rounded-2xl p-7 sm:p-8 text-white shadow-xl shadow-violet-500/15">
+        {/* Decorative shapes */}
+        <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-1/4 w-40 h-40 bg-white/5 rounded-full translate-y-1/2" />
+        <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-white/5 rounded-full" />
+
+        <div className="relative z-10">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-violet-200 text-sm font-medium mb-1">{greeting()}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+                {user?.name?.split(' ')[0]}, ready to learn? <span className="inline-block animate-bounce">🎯</span>
+              </h1>
+              <p className="text-violet-100/80 text-sm max-w-md leading-relaxed">
+                Continue your learning adventure! Pick up where you left off or start something new today.
+              </p>
+              <div className="flex items-center gap-3 mt-5">
+                <Link to="/learner/languages" className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-violet-700 font-semibold text-sm rounded-xl hover:bg-violet-50 transition-all duration-200 shadow-lg shadow-violet-900/20">
+                  Start Learning
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                </Link>
+                <Link to="/learner/test" className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/15 backdrop-blur-sm text-white font-semibold text-sm rounded-xl hover:bg-white/25 transition-all duration-200 ring-1 ring-white/20">
+                  Take Test
+                </Link>
+              </div>
+            </div>
+
+            {/* Streak & XP cards */}
+            <div className="hidden lg:flex items-center gap-3">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 text-center border border-white/10 min-w-[90px] hover:bg-white/15 transition-colors duration-200">
+                <span className="text-2xl block mb-1">🔥</span>
+                <div className="text-2xl font-bold">0</div>
+                <div className="text-[11px] text-violet-200 mt-0.5 font-medium">Day Streak</div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 text-center border border-white/10 min-w-[90px] hover:bg-white/15 transition-colors duration-200">
+                <span className="text-2xl block mb-1">⭐</span>
+                <div className="text-2xl font-bold">0</div>
+                <div className="text-[11px] text-violet-200 mt-0.5 font-medium">XP Points</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Languages', value: '0', sub: 'enrolled', icon: '🌍', gradient: 'from-violet-500 to-purple-500', light: 'from-violet-50 to-purple-50', text: 'text-violet-700' },
+          { label: 'Courses', value: '0', sub: 'in progress', icon: '📚', gradient: 'from-emerald-500 to-teal-500', light: 'from-emerald-50 to-teal-50', text: 'text-emerald-700' },
+          { label: 'Exercises', value: '0', sub: 'completed', icon: '✏️', gradient: 'from-amber-500 to-orange-500', light: 'from-amber-50 to-orange-50', text: 'text-amber-700' },
+          { label: 'Progress', value: '0%', sub: 'overall', icon: '📈', gradient: 'from-rose-500 to-pink-500', light: 'from-rose-50 to-pink-50', text: 'text-rose-700' },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-default">
+            <div className="flex items-center justify-between mb-3">
+              <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${stat.light} flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110`}>
+                {stat.icon}
+              </div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.sub}</span>
+            </div>
+            <p className={`text-2xl font-bold ${stat.text} tracking-tight`}>{stat.value}</p>
+            <p className="text-[13px] text-gray-500 mt-0.5 font-medium">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Weekly Activity */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-base font-bold text-gray-800">Weekly Activity</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Minutes spent learning this week</p>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 rounded-lg">
+              <div className="w-2 h-2 rounded-full bg-violet-500"></div>
+              <span className="text-xs text-violet-600 font-medium">This week</span>
+            </div>
+          </div>
+          <div className="flex items-end gap-2.5 h-36">
+            {weekDays.map((day, i) => {
+              const isToday = i === new Date().getDay() - 1;
+              return (
+                <div key={day} className="flex-1 flex flex-col items-center gap-2">
+                  <div className="w-full relative group/bar cursor-default">
+                    {weekActivity[i] > 0 && (
+                      <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                        {weekActivity[i]}m
+                      </div>
+                    )}
+                    <div className="w-full bg-gray-50 rounded-xl overflow-hidden" style={{ height: '120px' }}>
+                      <div
+                        className={`w-full absolute bottom-0 rounded-xl transition-all duration-500 ${
+                          weekActivity[i] > 0 
+                            ? 'bg-gradient-to-t from-violet-600 to-purple-400 group-hover/bar:from-violet-500 group-hover/bar:to-purple-300' 
+                            : 'bg-gray-100'
+                        }`}
+                        style={{ height: `${(weekActivity[i] / maxActivity) * 100}%`, minHeight: weekActivity[i] > 0 ? '8px' : '4px' }}
+                      />
+                    </div>
+                  </div>
+                  <span className={`text-[11px] font-semibold ${isToday ? 'text-violet-600' : 'text-gray-400'}`}>{day}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Level Test Card */}
+        <div className="bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 rounded-2xl border border-violet-100/50 p-6 flex flex-col shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-violet-200/20 rounded-full -translate-y-1/3 translate-x-1/4" />
+          <div className="relative z-10 flex flex-col h-full">
+            <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-violet-500/25">
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+              </svg>
+            </div>
+            <h3 className="text-base font-bold text-gray-800 mb-1.5">Placement Test</h3>
+            <p className="text-[13px] text-gray-500 leading-relaxed flex-1">
+              Discover your level with a quick 5-category assessment — Vocabulary, Grammar, Reading, Writing & Listening.
+            </p>
+            <Link to="/learner/test" className="mt-4 inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-violet-700 hover:to-purple-700 transition-all duration-200 shadow-md shadow-violet-500/20 w-fit">
+              Take the Test
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions — Explore */}
+      <div>
+        <h3 className="text-base font-bold text-gray-800 mb-4">Explore</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: 'Languages', desc: 'Choose a language to learn', icon: '🌍', to: '/learner/languages', gradient: 'from-violet-500 to-purple-600', light: 'from-violet-50 to-purple-50' },
+            { label: 'My Courses', desc: 'Continue learning chapters', icon: '📖', to: '/learner/courses', gradient: 'from-emerald-500 to-teal-500', light: 'from-emerald-50 to-teal-50' },
+            { label: 'Exercises', desc: 'Practice your skills', icon: '🧩', to: '/learner/exercises', gradient: 'from-amber-500 to-orange-500', light: 'from-amber-50 to-orange-50' },
+            { label: 'My Progress', desc: 'Track your growth', icon: '🏆', to: '/learner/progress', gradient: 'from-rose-500 to-pink-500', light: 'from-rose-50 to-pink-50' },
+          ].map((item) => (
+            <Link key={item.label} to={item.to} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 block">
+              {/* Top gradient accent */}
+              <div className={`h-1.5 bg-gradient-to-r ${item.gradient}`} />
+              <div className="p-5">
+                <div className={`w-12 h-12 bg-gradient-to-br ${item.light} rounded-xl flex items-center justify-center mb-3 text-xl group-hover:scale-110 transition-transform duration-300`}>
+                  {item.icon}
+                </div>
+                <h4 className="font-bold text-gray-800 text-[14px] mb-1 group-hover:text-violet-700 transition-colors duration-200">{item.label}</h4>
+                <p className="text-[12px] text-gray-400 leading-relaxed">{item.desc}</p>
+                <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  Explore
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function LearnerStats() {
-  const stats = [
-    { label: 'Courses Enrolled', value: '0', icon: BookIcon, color: 'blue' },
-    { label: 'Lessons Completed', value: '0', icon: CheckIcon, color: 'green' },
-    { label: 'Day Streak', value: '0', icon: FireIcon, color: 'orange' },
-    { label: 'Overall Progress', value: '0%', icon: ChartIcon, color: 'purple' },
-  ];
-  return <StatsGrid stats={stats} />;
+  return null; // Handled by LearnerDashboard
 }
 
 function LearnerActions() {
-  const actions = [
-    { label: 'Browse Courses', desc: 'Find new languages to learn', icon: SearchIcon, color: 'blue' },
-    { label: 'My Courses', desc: 'Continue where you left off', icon: BookIcon, color: 'green' },
-    { label: 'My Profile', desc: 'Update your information', icon: UserIcon, color: 'purple' },
-  ];
-  return <ActionsGrid actions={actions} />;
+  return null; // Handled by LearnerDashboard
 }
 
 // ─── Instructor Components ─────────────────────────────
 
+function InstructorDashboard({ user }) {
+  const [languages, setLanguages] = useState([]);
+  const [chapters, setChapters] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      getInstructorLanguages().then(r => r.data).catch(() => []),
+      getChapters({}).then(r => r.data).catch(() => []),
+      getTestQuestions({}).then(r => r.data).catch(() => []),
+    ]).then(([langs, chaps, qs]) => {
+      setLanguages(langs);
+      setChapters(chaps);
+      setQuestions(qs);
+      setLoading(false);
+    });
+  }, []);
+
+  const greeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const publishedCount = chapters.filter(c => c.is_published).length;
+  const draftCount = chapters.filter(c => !c.is_published).length;
+  const categories = ['vocabulary', 'grammar', 'reading', 'listening', 'writing'];
+  const catCounts = categories.map(cat => ({ cat, count: questions.filter(q => q.category === cat).length }));
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-28 bg-gray-100 rounded-2xl animate-pulse" />
+        <div className="grid grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-gray-100 rounded-2xl animate-pulse" />)}
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => <div key={i} className="h-40 bg-gray-100 rounded-2xl animate-pulse" />)}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      <div className="relative overflow-hidden bg-white rounded-2xl border border-gray-100 p-7 shadow-sm">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 via-violet-400 to-violet-300" />
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-400 font-medium">{greeting()}</p>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight mt-0.5">{user?.name}</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2">
+            {languages.map(lang => (
+              <span key={lang.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 text-violet-700 rounded-lg text-xs font-semibold ring-1 ring-violet-100">
+                {lang.image_url && <img src={lang.image_url} alt="" className="w-4 h-4 rounded-sm object-cover" />}
+                {lang.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Languages', value: languages.length, icon: '🌐', sub: 'assigned' },
+          { label: 'Chapters', value: chapters.length, icon: '📄', sub: `${publishedCount} published` },
+          { label: 'Test Questions', value: questions.length, icon: '❓', sub: `${categories.length} categories` },
+          { label: 'Draft Chapters', value: draftCount, icon: '📝', sub: 'unpublished' },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 group">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-2xl">{stat.icon}</span>
+              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{stat.sub}</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900 tracking-tight">{stat.value}</p>
+            <p className="text-sm text-gray-500 mt-0.5">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Test Question Distribution */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-base font-bold text-gray-800">Question Distribution</h3>
+              <p className="text-xs text-gray-400 mt-0.5">{questions.length} total across {categories.length} categories</p>
+            </div>
+            <Link to="/instructor/test-questions" className="text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors">
+              View all →
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {[
+              { cat: 'vocabulary', label: 'Vocabulary', icon: '📝' },
+              { cat: 'grammar', label: 'Grammar', icon: '📐' },
+              { cat: 'reading', label: 'Reading', icon: '📖' },
+              { cat: 'listening', label: 'Listening', icon: '🎧' },
+              { cat: 'writing', label: 'Writing', icon: '✍️' },
+            ].map(({ cat, label, icon }) => {
+              const count = catCounts.find(c => c.cat === cat)?.count || 0;
+              const max = Math.max(...catCounts.map(c => c.count), 1);
+              const pct = (count / max) * 100;
+              return (
+                <div key={cat} className="flex items-center gap-3">
+                  <span className="text-sm w-5 text-center">{icon}</span>
+                  <span className="text-sm font-medium text-gray-700 w-20">{label}</span>
+                  <div className="flex-1 h-7 bg-gray-50 rounded-lg overflow-hidden relative">
+                    <div
+                      className="h-full bg-violet-100 rounded-lg transition-all duration-500"
+                      style={{ width: `${Math.max(pct, 2)}%` }}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">{count}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="space-y-4">
+          <h3 className="text-base font-bold text-gray-800">Quick Actions</h3>
+          {[
+            { label: 'Add Chapter', desc: 'Create new course content', to: '/instructor/chapters', icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+            ) },
+            { label: 'Add Test Question', desc: 'Build placement tests', to: '/instructor/test-questions', icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+            ) },
+            { label: 'My Profile', desc: 'Update your info', to: '/profile', icon: (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+            ) },
+          ].map((action) => (
+            <Link key={action.label} to={action.to}
+              className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md hover:border-violet-100 transition-all duration-200 group">
+              <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
+                {action.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-800 group-hover:text-violet-700 transition-colors">{action.label}</p>
+                <p className="text-xs text-gray-400">{action.desc}</p>
+              </div>
+              <svg className="w-4 h-4 text-gray-300 group-hover:text-violet-400 transition-colors shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Chapters */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-gray-800">Recent Chapters</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Your latest content</p>
+          </div>
+          <Link to="/instructor/chapters" className="text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors">
+            View all →
+          </Link>
+        </div>
+        {chapters.length === 0 ? (
+          <div className="text-center py-14">
+            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-gray-600">No chapters yet</p>
+            <p className="text-xs text-gray-400 mt-1">Start by creating your first chapter</p>
+            <Link to="/instructor/chapters" className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+              Create Chapter
+            </Link>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {chapters.slice(0, 5).map((ch) => (
+              <div key={ch.id} className="px-6 py-4 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
+                <div className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center text-sm font-bold text-gray-400 shrink-0">
+                  {ch.order || '#'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">{ch.title}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-gray-400">{ch.language?.name}</span>
+                    {ch.level && (
+                      <>
+                        <span className="text-gray-200">·</span>
+                        <span className="text-xs text-gray-400">{ch.level.name}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold ${
+                  ch.is_published
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : 'bg-gray-100 text-gray-500'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${ch.is_published ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                  {ch.is_published ? 'Published' : 'Draft'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function InstructorStats() {
-  const stats = [
-    { label: 'My Courses', value: '0', icon: BookIcon, color: 'blue' },
-    { label: 'Total Students', value: '0', icon: UsersIcon, color: 'green' },
-    { label: 'Lessons Created', value: '0', icon: FileIcon, color: 'orange' },
-    { label: 'Avg. Rating', value: '—', icon: StarIcon, color: 'purple' },
-  ];
-  return <StatsGrid stats={stats} />;
+  return null; // Handled by InstructorDashboard
 }
 
 function InstructorActions() {
-  const actions = [
-    { label: 'Create Course', desc: 'Build a new course', icon: PlusIcon, color: 'blue' },
-    { label: 'My Courses', desc: 'Manage your courses', icon: BookIcon, color: 'green' },
-    { label: 'My Profile', desc: 'Update your information', icon: UserIcon, color: 'purple' },
-  ];
-  return <ActionsGrid actions={actions} />;
+  return null; // Handled by InstructorDashboard
 }
 
 // ─── Admin Components ──────────────────────────────────
@@ -104,7 +490,7 @@ function AdminStats() {
     { label: 'Languages', value: '0', icon: GlobeIcon, color: 'orange' },
     { label: 'Active Instructors', value: '0', icon: UserIcon, color: 'purple' },
   ];
-  return <StatsGrid stats={stats} />;
+  return <StatsGrid stats={stats} dark />;
 }
 
 function AdminActions() {
@@ -113,13 +499,18 @@ function AdminActions() {
     { label: 'Manage Languages', desc: 'Add or edit languages', icon: GlobeIcon, color: 'green', to: '/admin/languages' },
     { label: 'Manage Courses', desc: 'Review all courses', icon: BookIcon, color: 'orange' },
   ];
-  return <ActionsGrid actions={actions} />;
+  return <ActionsGrid actions={actions} dark />;
 }
 
 // ─── Reusable Layout Components ────────────────────────
 
-function StatsGrid({ stats }) {
-  const colorMap = {
+function StatsGrid({ stats, dark }) {
+  const colorMap = dark ? {
+    blue: 'bg-blue-500/10 text-blue-400',
+    green: 'bg-emerald-500/10 text-emerald-400',
+    orange: 'bg-orange-500/10 text-orange-400',
+    purple: 'bg-purple-500/10 text-purple-400',
+  } : {
     blue: 'bg-blue-100 text-blue-600',
     green: 'bg-green-100 text-green-600',
     orange: 'bg-orange-100 text-orange-600',
@@ -129,22 +520,29 @@ function StatsGrid({ stats }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat) => (
-        <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+        <div key={stat.label} className={`rounded-2xl border p-5 hover:-translate-y-0.5 transition-all duration-300 group ${
+          dark ? 'bg-[#111827] border-white/5 hover:border-white/10' : 'bg-white border-gray-100 hover:shadow-md'
+        }`}>
           <div className="flex items-center justify-between mb-4">
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${colorMap[stat.color]} transition-transform duration-300 group-hover:scale-105`}>
               <stat.icon />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-800 tracking-tight">{stat.value}</p>
-          <p className="text-[13px] text-gray-500 mt-0.5">{stat.label}</p>
+          <p className={`text-2xl font-bold tracking-tight ${dark ? 'text-white' : 'text-gray-800'}`}>{stat.value}</p>
+          <p className={`text-[13px] mt-0.5 ${dark ? 'text-slate-400' : 'text-gray-500'}`}>{stat.label}</p>
         </div>
       ))}
     </div>
   );
 }
 
-function ActionsGrid({ actions }) {
-  const colorMap = {
+function ActionsGrid({ actions, dark }) {
+  const colorMap = dark ? {
+    blue: 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/15',
+    green: 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/15',
+    orange: 'bg-orange-500/10 text-orange-400 hover:bg-orange-500/15',
+    purple: 'bg-purple-500/10 text-purple-400 hover:bg-purple-500/15',
+  } : {
     blue: 'bg-blue-50 text-blue-600 hover:bg-blue-100',
     green: 'bg-green-50 text-green-600 hover:bg-green-100',
     orange: 'bg-orange-50 text-orange-600 hover:bg-orange-100',
@@ -154,14 +552,16 @@ function ActionsGrid({ actions }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {actions.map((action) => {
-        const cardClass = "bg-white rounded-2xl border border-gray-100 p-6 text-left hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer block group";
+        const cardClass = `rounded-2xl border p-6 text-left hover:-translate-y-0.5 transition-all duration-300 cursor-pointer block group ${
+          dark ? 'bg-[#111827] border-white/5 hover:border-white/10' : 'bg-white border-gray-100 hover:shadow-md'
+        }`;
         const content = (
           <>
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-105 ${colorMap[action.color]}`}>
               <action.icon />
             </div>
-            <h4 className="font-semibold text-gray-800 mb-1 text-[15px]">{action.label}</h4>
-            <p className="text-[13px] text-gray-500 leading-relaxed">{action.desc}</p>
+            <h4 className={`font-semibold mb-1 text-[15px] ${dark ? 'text-white' : 'text-gray-800'}`}>{action.label}</h4>
+            <p className={`text-[13px] leading-relaxed ${dark ? 'text-slate-400' : 'text-gray-500'}`}>{action.desc}</p>
           </>
         );
         return action.to ? (

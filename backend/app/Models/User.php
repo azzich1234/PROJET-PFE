@@ -33,4 +33,32 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Languages assigned to this instructor.
+     */
+    public function languages()
+    {
+        return $this->hasMany(Language::class, 'instructor_id');
+    }
+
+    public function chapters()
+    {
+        return $this->hasMany(Chapter::class, 'instructor_id');
+    }
+
+    public function learnerLevels()
+    {
+        return $this->hasMany(LearnerLevel::class);
+    }
+
+    public function testQuestions()
+    {
+        return $this->hasMany(TestQuestion::class, 'instructor_id');
+    }
+
+    public function testResults()
+    {
+        return $this->hasMany(TestResult::class);
+    }
 }

@@ -7,6 +7,15 @@ import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 import DashboardPage from '../pages/DashboardPage';
 import ProfilePage from '../pages/ProfilePage';
 import AdminUsersPage from '../pages/admin/AdminUsersPage';
+import AdminLanguagesPage from '../pages/admin/AdminLanguagesPage';
+import LearnerLanguagesPage from '../pages/learner/LearnerLanguagesPage';
+import LearnerCoursesPage from '../pages/learner/LearnerCoursesPage';
+import LearnerExercisesPage from '../pages/learner/LearnerExercisesPage';
+import LearnerProgressPage from '../pages/learner/LearnerProgressPage';
+import LearnerTestPage from '../pages/learner/LearnerTestPage';
+import InstructorChaptersPage from '../pages/instructor/InstructorChaptersPage';
+import InstructorTestQuestionsPage from '../pages/instructor/InstructorTestQuestionsPage';
+import SSOCallbackPage from '../pages/auth/SSOCallbackPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import AdminLayout from '../components/AdminLayout';
 import InstructorLayout from '../components/InstructorLayout';
@@ -64,11 +73,41 @@ const router = createBrowserRouter([
       {
         element: <AdminLayout />,
         children: [
-          { path: '/admin/users', element: <AdminUsersPage /> },
+          { path: '/admin/users',     element: <AdminUsersPage /> },
+          { path: '/admin/languages', element: <AdminLanguagesPage /> },
         ],
       },
     ],
   },
+  {
+    element: <ProtectedRoute allowedRoles={['instructor']} />,
+    children: [
+      {
+        element: <InstructorLayout />,
+        children: [
+          { path: '/instructor/chapters',       element: <InstructorChaptersPage /> },
+          { path: '/instructor/test-questions', element: <InstructorTestQuestionsPage /> },
+        ],
+      },
+    ],
+  },
+  {
+    element: <ProtectedRoute allowedRoles={['learner']} />,
+    children: [
+      {
+        element: <LearnerLayout />,
+        children: [
+          { path: '/learner/languages', element: <LearnerLanguagesPage /> },
+          { path: '/learner/courses',   element: <LearnerCoursesPage /> },
+          { path: '/learner/exercises', element: <LearnerExercisesPage /> },
+          { path: '/learner/progress',  element: <LearnerProgressPage /> },
+          { path: '/learner/test',      element: <LearnerTestPage /> },
+        ],
+      },
+    ],
+  },
+  // SSO callback route (must be public, outside GuestRoute/ProtectedRoute)
+  { path: '/sso-callback', element: <SSOCallbackPage /> },
   { path: '*', element: <Navigate to="/login" replace /> },
 ]);
 

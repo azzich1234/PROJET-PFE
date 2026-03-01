@@ -43,7 +43,7 @@ const navItems = [
 
 export default function AdminLayout() {
   return (
-    <RoleLayout navItems={navItems}>
+    <RoleLayout navItems={navItems} theme="dark">
       <Outlet />
     </RoleLayout>
   );

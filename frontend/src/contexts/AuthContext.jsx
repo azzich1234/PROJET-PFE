@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, registerUser, logoutUser, getUser } from '../api/auth';
+import { loginUser, registerUser, logoutUser, getUser, socialLogin as socialLoginApi } from '../api/auth';
 
 // Step 1: Create a "container" to share auth data across all pages
 const AuthContext = createContext(null);
@@ -53,9 +53,16 @@ export function AuthProvider({ children }) {
     } catch {}
   };
 
+  // Social login (Google via Clerk) — create or find user in backend
+  const googleLogin = async (email, name) => {
+    const res = await socialLoginApi({ email, name });
+    localStorage.setItem('token', res.data.token);
+    setUser(res.data.user);
+  };
+
   // Step 7: Share everything with child components
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, googleLogin, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
